@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="MyLife">
+<meta name="theme-color" content="#ffffff">
+<title>MyLife</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+:root {
+  --bg: #f2f0ec;
+  --surface: #ffffff;
+  --surface2: #f8f7f5;
+  --surface3: #f0ede8;
+  --border: #e4e0d9;
+  --border2: #ccc8c0;
+  --text: #1c1a18;
+  --text2: #6b6860;
+  --text3: #9b9890;
+  --accent: #5c6bc0;
+  --accent2: #3949ab;
+  --red: #dc2626;
+  --green: #059669;
+  --blue: #2563eb;
+  --amber: #d97706;
+  --purple: #7c3aed;
+  --radius: 12px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Person colors */
+  --pascal: #5c6bc0;
+  --nicole: #c2185b;
+  --elina: #0288d1;
+  --chiara: #388e3c;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overscroll-behavior: none;
+  font-size: 15px;
+}
+
+/* ── HEADER ─────────────────────────────────────────────── */
+.header {
+  padding: 16px 20px 12px;
+  padding-top: calc(16px + var(--safe-top));
+  background: var(--surface);
+  position: sticky; top: 0; z-index: 100;
+  border-bottom: 1px solid var(--border);
+}
+.header-row { display: flex; align-items: center; justify-content: space-between; }
+.header-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 26px; color: var(--accent);
+  letter-spacing: -.01em;
+}
+.header-sub { font-size: 11px; color: var(--text3); letter-spacing: .08em; text-transform: uppercase; margin-top: 1px; }
+.header-action {
+  background: var(--surface2); border: 1px solid var(--border);
+  border-radius: 10px; padding: 7px 12px;
+  font-size: 13px; color: var(--text2);
+  cursor: pointer; font-family: inherit;
+}
+.header-action:active { background: var(--surface3); }
+
+/* ── BOTTOM NAV ──────────────────────────────────────────── */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  padding-bottom: var(--safe-bottom);
+  z-index: 100;
+}
+.nav-tab {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 10px 4px 8px;
+  cursor: pointer; border: none; background: none;
+  color: var(--text3); font-family: inherit;
+  transition: color .2s;
+}
+.nav-tab.active { color: var(--accent); }
+.nav-tab-icon { font-size: 20px; margin-bottom: 3px; }
+.nav-tab-label { font-size: 10px; font-weight: 500; letter-spacing: .04em; }
+
+/* ── PAGES ───────────────────────────────────────────────── */
+.page { display: none; padding: 16px 20px; padding-bottom: calc(80px + var(--safe-bottom)); }
+.page.active { display: block; }
+
+/* ── PERSON FILTER ───────────────────────────────────────── */
+.person-strip {
+  display: flex; gap: 8px; margin-bottom: 16px;
+  overflow-x: auto; scrollbar-width: none; padding-bottom: 2px;
+}
+.person-strip::-webkit-scrollbar { display: none; }
+.person-chip {
+  flex-shrink: 0; display: flex; align-items: center; gap: 6px;
+  padding: 6px 12px; border-radius: 99px;
+  border: 1.5px solid var(--border); background: none;
+  font-size: 12px; font-weight: 500; cursor: pointer;
+  font-family: inherit; color: var(--text2);
+  transition: all .2s; white-space: nowrap;
+}
+.person-chip.active { border-color: currentColor; }
+.person-chip[data-person="alle"].active { color: var(--accent); border-color: var(--accent); background: rgba(200,184,154,.08); }
+.person-chip[data-person="Pascal"].active { color: var(--pascal); border-color: var(--pascal); background: rgba(200,184,154,.08); }
+.person-chip[data-person="Nicole"].active { color: var(--nicole); border-color: var(--nicole); background: rgba(224,160,200,.08); }
+.person-chip[data-person="Elina"].active { color: var(--elina); border-color: var(--elina); background: rgba(160,200,224,.08); }
+.person-chip[data-person="Chiara"].active { color: var(--chiara); border-color: var(--chiara); background: rgba(160,224,184,.08); }
+.person-avatar {
+  width: 18px; height: 18px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700;
+}
+
+/* ── ADD BAR ─────────────────────────────────────────────── */
+.add-bar { display: flex; gap: 8px; margin-bottom: 12px; }
+.add-input {
+  flex: 1; padding: 11px 14px;
+  background: var(--surface); border: 1.5px solid var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-size: 15px; font-family: inherit; outline: none;
+}
+.add-input:focus { border-color: var(--accent); }
+.add-input::placeholder { color: var(--text3); }
+.add-btn {
+  padding: 11px 16px; background: var(--accent); color: white;
+  border: none; border-radius: var(--radius);
+  font-size: 22px; font-weight: 300; cursor: pointer;
+  flex-shrink: 0; line-height: 1;
+}
+.add-btn:active { opacity: .8; }
+.add-opts { display: flex; gap: 8px; margin-bottom: 16px; }
+.add-opts select {
+  flex: 1; padding: 8px 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text2);
+  font-size: 12px; font-family: inherit; outline: none;
+}
+
+/* ── SECTION TITLE ───────────────────────────────────────── */
+.section-title {
+  font-size: 10px; font-weight: 600; letter-spacing: .1em;
+  text-transform: uppercase; color: var(--text3);
+  margin: 20px 0 10px;
+}
+.section-title:first-child { margin-top: 0; }
+
+/* ── CARD ────────────────────────────────────────────────── */
+.card {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--radius); margin-bottom: 8px;
+  overflow: hidden; transition: border-color .2s;
+}
+.card:active { border-color: var(--border2); }
+
+/* ── TODO ITEM ───────────────────────────────────────────── */
+.todo-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 13px 14px; cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.todo-item:last-child { border-bottom: none; }
+.todo-item:active { background: var(--surface2); }
+
+.check-ring {
+  width: 22px; height: 22px; border-radius: 50%;
+  border: 2px solid var(--border2); flex-shrink: 0; margin-top: 1px;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.check-ring:active { border-color: var(--green); transform: scale(1.15); }
+.check-ring.done { background: var(--green); border-color: var(--green); }
+.check-ring.done::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+
+.todo-body { flex: 1; min-width: 0; }
+.todo-title { font-size: 15px; line-height: 1.4; word-break: break-word; }
+.todo-title.done { color: var(--text3); text-decoration: line-through; }
+.todo-meta { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 5px; }
+.tag {
+  font-size: 10px; font-weight: 600; padding: 2px 8px;
+  border-radius: 99px; letter-spacing: .03em;
+}
+.tag-person-Pascal { background: rgba(200,184,154,.15); color: var(--pascal); }
+.tag-person-Nicole { background: rgba(224,160,200,.15); color: var(--nicole); }
+.tag-person-Elina  { background: rgba(160,200,224,.15); color: var(--elina); }
+.tag-person-Chiara { background: rgba(160,224,184,.15); color: var(--chiara); }
+.tag-cat { background: var(--surface2); color: var(--text2); }
+.tag-date { background: var(--surface2); color: var(--text3); }
+.tag-prio-hoch   { background: rgba(224,92,92,.15); color: var(--red); }
+.tag-prio-mittel { background: rgba(224,168,92,.15); color: var(--amber); }
+.tag-prio-tief   { background: rgba(92,184,138,.15); color: var(--green); }
+.todo-arrow { color: var(--text3); font-size: 18px; align-self: center; flex-shrink: 0; }
+
+/* ── SHOPPING ────────────────────────────────────────────── */
+.shop-list-header {
+  display: flex; align-items: center; gap: 10px;
+  padding: 13px 14px; cursor: pointer;
+}
+.shop-list-name { font-size: 15px; font-weight: 500; flex: 1; }
+.shop-list-count { font-size: 12px; color: var(--text3); }
+.shop-list-chevron { color: var(--text3); font-size: 11px; transition: transform .2s; }
+.shop-list-body { border-top: 1px solid var(--border); }
+.shop-collapsed .shop-list-chevron { transform: rotate(-90deg); }
+.shop-collapsed .shop-list-body { display: none; }
+
+.shop-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 14px; border-bottom: 1px solid var(--border);
+}
+.shop-item:last-child { border-bottom: none; }
+.shop-check {
+  width: 20px; height: 20px; border-radius: 4px;
+  border: 2px solid var(--border2); flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .15s;
+}
+.shop-check.checked { background: var(--green); border-color: var(--green); }
+.shop-check.checked::after { content: '✓'; color: white; font-size: 11px; font-weight: 700; }
+.shop-item-name { flex: 1; font-size: 14px; }
+.shop-item-name.checked { color: var(--text3); text-decoration: line-through; }
+.shop-item-qty { font-size: 12px; color: var(--text3); flex-shrink: 0; }
+.shop-item-del { color: var(--text3); font-size: 14px; cursor: pointer; padding: 4px; flex-shrink: 0; }
+.shop-item-del:active { color: var(--red); }
+
+.shop-add-row {
+  display: flex; gap: 8px; padding: 10px 14px;
+  border-top: 1px solid var(--border); background: var(--surface2);
+}
+.shop-add-input {
+  flex: 1; padding: 7px 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: 8px; color: var(--text);
+  font-size: 13px; font-family: inherit; outline: none;
+}
+.shop-add-input::placeholder { color: var(--text3); }
+.shop-add-btn {
+  padding: 7px 12px; background: var(--accent); color: white;
+  border: none; border-radius: 8px; font-size: 16px;
+  cursor: pointer; font-family: inherit;
+}
+.shop-reset-btn {
+  padding: 7px 10px; background: none;
+  border: 1px solid var(--border); border-radius: 8px;
+  color: var(--text3); font-size: 11px; cursor: pointer;
+  font-family: inherit; white-space: nowrap;
+}
+.shop-reset-btn:active { border-color: var(--amber); color: var(--amber); }
+
+.new-list-row {
+  display: flex; gap: 8px; margin-top: 12px;
+}
+.new-list-input {
+  flex: 1; padding: 10px 14px;
+  background: var(--surface); border: 1.5px dashed var(--border);
+  border-radius: var(--radius); color: var(--text);
+  font-size: 14px; font-family: inherit; outline: none;
+}
+.new-list-input:focus { border-color: var(--accent); border-style: solid; }
+.new-list-input::placeholder { color: var(--text3); }
+.new-list-btn {
+  padding: 10px 14px; background: var(--surface);
+  border: 1.5px dashed var(--border); border-radius: var(--radius);
+  color: var(--accent); font-size: 18px; cursor: pointer; font-family: inherit;
+}
+
+/* ── WISHES ──────────────────────────────────────────────── */
+.wish-item {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 13px 14px; cursor: pointer;
+  border-bottom: 1px solid var(--border);
+}
+.wish-item:last-child { border-bottom: none; }
+.wish-item:active { background: var(--surface2); }
+.wish-star {
+  font-size: 18px; flex-shrink: 0; margin-top: 1px;
+  cursor: pointer; transition: transform .2s;
+}
+.wish-star:active { transform: scale(1.3); }
+.wish-body { flex: 1; min-width: 0; }
+.wish-title { font-size: 15px; line-height: 1.4; word-break: break-word; }
+.wish-title.fulfilled { color: var(--text3); text-decoration: line-through; }
+.wish-link { font-size: 11px; color: var(--blue); margin-top: 3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* ── SHEET ───────────────────────────────────────────────── */
+.overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.6); z-index: 200; backdrop-filter: blur(2px);
+}
+.overlay.open { display: block; }
+.sheet {
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--surface); border-radius: 20px 20px 0 0;
+  padding-bottom: calc(24px + var(--safe-bottom));
+  max-height: 92vh; overflow-y: auto; z-index: 201;
+  transform: translateY(100%);
+  transition: transform .32s cubic-bezier(.32,.72,0,1);
+  border-top: 1px solid var(--border2);
+}
+.sheet.open { transform: translateY(0); }
+.sheet-handle { width: 36px; height: 4px; background: var(--border2); border-radius: 99px; margin: 12px auto 6px; }
+.sheet-hd {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 20px 14px; border-bottom: 1px solid var(--border);
+}
+.sheet-hd-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--accent); }
+.close-btn {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--surface2); border: none; color: var(--text2);
+  font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+
+.field { padding: 14px 20px 0; }
+.flabel { font-size: 10px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--text3); margin-bottom: 6px; }
+.field input, .field textarea, .field select {
+  width: 100%; padding: 10px 12px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 8px; color: var(--text);
+  font-size: 15px; font-family: inherit; outline: none;
+}
+.field input:focus, .field textarea:focus, .field select:focus { border-color: var(--accent); }
+.field textarea { resize: vertical; min-height: 70px; }
+.field select option { background: var(--surface); color: var(--text); }
+.field-row { display: flex; }
+.field-row .field { flex: 1; }
+
+.sh-actions { display: flex; gap: 8px; padding: 16px 20px 0; }
+.sh-btn {
+  flex: 1; padding: 12px; border-radius: 10px;
+  border: none; font-size: 14px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: opacity .15s;
+}
+.sh-btn:active { opacity: .8; }
+.sh-save   { background: var(--accent); color: white; }
+.sh-done   { background: var(--green); color: white; }
+.sh-undone { background: var(--amber); color: white; }
+.sh-delete { background: var(--surface2); color: var(--red); border: 1px solid var(--border); }
+
+/* ── PERSON SELECTOR ─────────────────────────────────────── */
+.person-selector { display: flex; gap: 8px; flex-wrap: wrap; padding: 14px 20px 0; }
+.ps-chip {
+  padding: 7px 14px; border-radius: 99px;
+  border: 1.5px solid var(--border); background: none;
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  font-family: inherit; color: var(--text2); transition: all .15s;
+}
+.ps-chip.selected-Pascal { color: var(--pascal); border-color: var(--pascal); background: rgba(200,184,154,.12); }
+.ps-chip.selected-Nicole { color: var(--nicole); border-color: var(--nicole); background: rgba(224,160,200,.12); }
+.ps-chip.selected-Elina  { color: var(--elina);  border-color: var(--elina);  background: rgba(160,200,224,.12); }
+.ps-chip.selected-Chiara { color: var(--chiara); border-color: var(--chiara); background: rgba(160,224,184,.12); }
+
+/* ── EMPTY STATE ─────────────────────────────────────────── */
+.empty {
+  text-align: center; padding: 40px 20px;
+  color: var(--text3); font-size: 14px; line-height: 1.8;
+}
+.empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+/* ── TOAST ───────────────────────────────────────────────── */
+.toast {
+  position: fixed; bottom: calc(72px + var(--safe-bottom) + 12px);
+  left: 50%; transform: translateX(-50%) translateY(12px);
+  background: var(--text); color: white;
+  border: none;
+  padding: 9px 18px; border-radius: 99px;
+  font-size: 13px; font-weight: 500;
+  opacity: 0; transition: all .25s;
+  pointer-events: none; z-index: 500; white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── MODAL ───────────────────────────────────────────────── */
+.modal-overlay {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,.6); z-index: 300;
+  align-items: center; justify-content: center; padding: 20px;
+  backdrop-filter: blur(2px);
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 16px; padding: 24px; width: 100%; max-width: 380px;
+}
+.modal-title { font-family: 'DM Serif Display', serif; font-size: 18px; color: var(--accent); margin-bottom: 16px; }
+.modal-input {
+  width: 100%; padding: 10px 12px; margin-bottom: 12px;
+  background: var(--surface2); border: 1.5px solid var(--border);
+  border-radius: 8px; color: var(--text); font-size: 15px;
+  font-family: inherit; outline: none;
+}
+.modal-input:focus { border-color: var(--accent); }
+.modal-actions { display: flex; gap: 8px; }
+.modal-btn {
+  flex: 1; padding: 11px; border-radius: 8px; border: none;
+  font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit;
+}
+.modal-btn.pri { background: var(--accent); color: white; }
+.modal-btn.sec { background: var(--surface2); color: var(--text2); border: 1px solid var(--border); }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-row">
+    <div>
+      <div class="header-title">MyLife</div>
+      <div class="header-sub" id="header-sub">Persönlicher Assistent</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="header-action" onclick="openCatManager()">🏷</button>
+      <button class="header-action" id="header-btn" onclick="headerAction()">+ Neu</button>
+    </div>
+  </div>
+</div>
+
+<!-- PAGES -->
+
+<!-- TODO PAGE -->
+<div class="page active" id="page-todo">
+  <div class="person-strip" id="todo-person-strip"></div>
+  <div class="add-bar">
+    <input class="add-input" id="todo-input" placeholder="Neue Aufgabe..." onkeydown="if(event.key==='Enter')addTodo()">
+    <button class="add-btn" onclick="addTodo()">+</button>
+  </div>
+  <div class="add-opts">
+    <select id="todo-person-sel"></select>
+    <select id="todo-cat-sel"></select>
+    <select id="todo-prio-sel">
+      <option value="mittel">🟡 Mittel</option>
+      <option value="hoch">🔴 Hoch</option>
+      <option value="tief">🟢 Tief</option>
+    </select>
+  </div>
+  <div id="todo-list"></div>
+</div>
+
+<!-- SHOPPING PAGE -->
+<div class="page" id="page-shop">
+  <div id="shop-lists"></div>
+  <div class="new-list-row">
+    <input class="new-list-input" id="new-list-input" placeholder="Neue Liste (z.B. Migros)..." onkeydown="if(event.key==='Enter')addShopList()">
+    <button class="new-list-btn" onclick="addShopList()">+</button>
+  </div>
+</div>
+
+<!-- WISHES PAGE -->
+<div class="page" id="page-wishes">
+  <div class="person-strip" id="wish-person-strip"></div>
+  <div class="add-bar">
+    <input class="add-input" id="wish-input" placeholder="Neuer Wunsch..." onkeydown="if(event.key==='Enter')addWish()">
+    <button class="add-btn" onclick="addWish()">+</button>
+  </div>
+  <div class="add-opts">
+    <select id="wish-person-sel"></select>
+    <select id="wish-cat-sel"></select>
+  </div>
+  <div id="wish-list"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-tab active" onclick="showPage('todo',this)">
+    <div class="nav-tab-icon">✓</div>
+    <div class="nav-tab-label">To-Do</div>
+  </button>
+  <button class="nav-tab" onclick="showPage('shop',this)">
+    <div class="nav-tab-icon">🛒</div>
+    <div class="nav-tab-label">Einkauf</div>
+  </button>
+  <button class="nav-tab" onclick="showPage('wishes',this)">
+    <div class="nav-tab-icon">⭐</div>
+    <div class="nav-tab-label">Wünsche</div>
+  </button>
+</nav>
+
+<!-- TODO DETAIL SHEET -->
+<div class="overlay" id="todo-ov" onclick="closeTodoSheet()"></div>
+<div class="sheet" id="todo-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hd">
+    <span class="sheet-hd-title">Aufgabe</span>
+    <button class="close-btn" onclick="closeTodoSheet()">✕</button>
+  </div>
+  <div class="field"><div class="flabel">Titel</div><textarea id="ds-title" rows="2" oninput="todoDetailSave()"></textarea></div>
+  <div class="field"><div class="flabel">Notizen</div><textarea id="ds-notes" rows="3" oninput="todoDetailSave()"></textarea></div>
+  <div class="field-row">
+    <div class="field"><div class="flabel">Prio</div>
+      <select id="ds-prio" onchange="todoDetailSave()">
+        <option value="hoch">🔴 Hoch</option>
+        <option value="mittel">🟡 Mittel</option>
+        <option value="tief">🟢 Tief</option>
+      </select>
+    </div>
+    <div class="field"><div class="flabel">Kategorie</div>
+      <select id="ds-cat" onchange="todoDetailSave()">
+        <option value="Allgemein">Allgemein</option>
+        <option value="Haushalt">🏠 Haushalt</option>
+        <option value="Auto">🚗 Auto</option>
+        <option value="Arbeit">💼 Arbeit</option>
+        <option value="Familie">👨‍👩‍👧‍👧 Familie</option>
+        <option value="Gesundheit">💊 Gesundheit</option>
+        <option value="Finanzen">💰 Finanzen</option>
+      </select>
+    </div>
+  </div>
+  <div class="field"><div class="flabel">Fällig</div><input type="date" id="ds-date" oninput="todoDetailSave()"></div>
+  <div class="field"><div class="flabel">Für wen</div></div>
+  <div class="person-selector" id="ds-person-sel"></div>
+  <div class="sh-actions">
+    <button class="sh-btn" id="ds-done-btn" onclick="toggleTodoDone()">✓ Erledigt</button>
+    <button class="sh-btn sh-delete" onclick="deleteTodo()">🗑</button>
+  </div>
+</div>
+
+<!-- WISH DETAIL SHEET -->
+<div class="overlay" id="wish-ov" onclick="closeWishSheet()"></div>
+<div class="sheet" id="wish-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hd">
+    <span class="sheet-hd-title">Wunsch</span>
+    <button class="close-btn" onclick="closeWishSheet()">✕</button>
+  </div>
+  <div class="field"><div class="flabel">Titel</div><textarea id="ws-title" rows="2" oninput="wishDetailSave()"></textarea></div>
+  <div class="field"><div class="flabel">Notizen</div><textarea id="ws-notes" rows="3" oninput="wishDetailSave()"></textarea></div>
+  <div class="field"><div class="flabel">Link (optional)</div><input type="url" id="ws-link" placeholder="https://..." oninput="wishDetailSave()"></div>
+  <div class="field-row">
+    <div class="field"><div class="flabel">Kategorie</div>
+      <select id="ws-cat" onchange="wishDetailSave()">
+        <option value="Allgemein">✨ Allgemein</option>
+        <option value="Erlebnis">🎉 Erlebnis</option>
+        <option value="Geschenk">🎁 Geschenk</option>
+        <option value="Reise">✈️ Reise</option>
+        <option value="Tech">📱 Tech</option>
+        <option value="Mode">👗 Mode</option>
+      </select>
+    </div>
+    <div class="field"><div class="flabel">Priorität</div>
+      <select id="ws-prio" onchange="wishDetailSave()">
+        <option value="hoch">🔴 Hoch</option>
+        <option value="mittel">🟡 Mittel</option>
+        <option value="tief">🟢 Tief</option>
+      </select>
+    </div>
+  </div>
+  <div class="field"><div class="flabel">Für wen</div></div>
+  <div class="person-selector" id="ws-person-sel"></div>
+  <div class="sh-actions">
+    <button class="sh-btn" id="ws-done-btn" onclick="toggleWishFulfilled()">⭐ Erfüllt</button>
+    <button class="sh-btn sh-delete" onclick="deleteWish()">🗑</button>
+  </div>
+</div>
+
+<!-- CATEGORY MANAGER SHEET -->
+<div class="overlay" id="cat-ov" onclick="closeCatManager()"></div>
+<div class="sheet" id="cat-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hd">
+    <span class="sheet-hd-title">🏷 Kategorien</span>
+    <button class="close-btn" onclick="closeCatManager()">✕</button>
+  </div>
+  <div style="padding:16px 20px;">
+    <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin-bottom:10px;">Aufgaben-Kategorien</div>
+    <div id="todo-cats-list"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <input id="new-todo-cat-inp" placeholder="Neue Kategorie..." style="flex:1;padding:9px 12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);outline:none;" onkeydown="if(event.key==='Enter')addTodoCat()">
+      <button onclick="addTodoCat()" style="padding:9px 14px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;">+</button>
+    </div>
+
+    <div style="font-size:10px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);margin:20px 0 10px;">Wunsch-Kategorien</div>
+    <div id="wish-cats-list"></div>
+    <div style="display:flex;gap:8px;margin-top:8px;">
+      <input id="new-wish-cat-inp" placeholder="Neue Kategorie..." style="flex:1;padding:9px 12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;color:var(--text);outline:none;" onkeydown="if(event.key==='Enter')addWishCat()">
+      <button onclick="addWishCat()" style="padding:9px 14px;background:var(--accent);color:white;border:none;border-radius:8px;font-size:16px;cursor:pointer;">+</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════════════════════
+const PERSONS = [
+  { name: 'Pascal', emoji: 'P', color: 'var(--pascal)' },
+  { name: 'Nicole', emoji: 'N', color: 'var(--nicole)' },
+  { name: 'Elina',  emoji: 'E', color: 'var(--elina)' },
+  { name: 'Chiara', emoji: 'C', color: 'var(--chiara)' },
+];
+
+let todos   = [];
+let wishes  = [];
+let shopLists = [
+  { id: 1, name: 'Migros', collapsed: false, items: [] },
+  { id: 2, name: 'Baumarkt', collapsed: false, items: [] },
+];
+let nextId = 100;
+let nextShopId = 10;
+let nextShopItemId = 100;
+let todoFilter  = 'alle';
+let wishFilter  = 'alle';
+let detailTodoId = null;
+let detailWishId = null;
+let currentPage = 'todo';
+let saveTimer = null;
+
+// ═══════════════════════════════════════════════════════════════
+// PERSIST
+// ═══════════════════════════════════════════════════════════════
+function save() {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(() => {
+    localStorage.setItem('mylife_v1', JSON.stringify({ todos, wishes, shopLists, nextId, nextShopId, nextShopItemId, todoCats, wishCats }));
+  }, 300);
+}
+
+function load() {
+  try {
+    const raw = localStorage.getItem('mylife_v1');
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    if (d.todos)     todos     = d.todos;
+    if (d.wishes)    wishes    = d.wishes;
+    if (d.shopLists) shopLists = d.shopLists;
+    if (d.nextId)        nextId        = d.nextId;
+    if (d.nextShopId)    nextShopId    = d.nextShopId;
+    if (d.nextShopItemId) nextShopItemId = d.nextShopItemId;
+    if (d.todoCats) todoCats = d.todoCats;
+    if (d.wishCats) wishCats = d.wishCats;
+  } catch(e) {}
+}
+
+// ═══════════════════════════════════════════════════════════════
+// NAV
+// ═══════════════════════════════════════════════════════════════
+function showPage(page, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + page).classList.add('active');
+  btn.classList.add('active');
+  currentPage = page;
+  const subs = { todo: 'Aufgaben', shop: 'Einkaufslisten', wishes: 'Wunschliste' };
+  document.getElementById('header-sub').textContent = subs[page] || '';
+  if (page === 'todo')   renderTodos();
+  if (page === 'shop')   renderShop();
+  if (page === 'wishes') renderWishes();
+}
+
+function headerAction() {
+  if (currentPage === 'todo')   { document.getElementById('todo-input').focus(); }
+  if (currentPage === 'shop')   { document.getElementById('new-list-input').focus(); }
+  if (currentPage === 'wishes') { document.getElementById('wish-input').focus(); }
+}
+
+// ═══════════════════════════════════════════════════════════════
+// PERSON UTILS
+// ═══════════════════════════════════════════════════════════════
+function personColor(name) {
+  const p = PERSONS.find(p => p.name === name);
+  return p ? p.color : 'var(--text2)';
+}
+
+function buildPersonStrip(containerId, filterVar, onFilter) {
+  const c = document.getElementById(containerId);
+  c.innerHTML = `<button class="person-chip${filterVar === 'alle' ? ' active' : ''}" data-person="alle" onclick="${onFilter}('alle',this)">Alle</button>` +
+    PERSONS.map(p => `
+      <button class="person-chip${filterVar === p.name ? ' active' : ''}" data-person="${p.name}" onclick="${onFilter}('${p.name}',this)">
+        <span class="person-avatar" style="background:${p.color}20;color:${p.color};">${p.emoji}</span>
+        ${p.name}
+      </button>`).join('');
+}
+
+function buildPersonSelects(ids, currentPerson) {
+  return `<option value="Alle">👥 Alle</option>` +
+    PERSONS.map(p => `<option value="${p.name}"${currentPerson === p.name ? ' selected' : ''}>${p.name}</option>`).join('');
+}
+
+function buildPersonSelectorHTML(selected, onChange) {
+  return PERSONS.map(p => `
+    <button class="ps-chip${selected === p.name ? ' selected-'+p.name : ''}"
+      onclick="${onChange}('${p.name}',this)">${p.name}</button>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// TO-DO
+// ═══════════════════════════════════════════════════════════════
+function setTodoFilter(f, btn) {
+  todoFilter = f;
+  document.querySelectorAll('#todo-person-strip .person-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderTodos();
+}
+
+function renderTodos() {
+  buildPersonStrip('todo-person-strip', todoFilter, 'setTodoFilter');
+  const sel = document.getElementById('todo-person-sel');
+  sel.innerHTML = buildPersonSelects(['todo-person-sel'], 'Pascal');
+  const tcs = document.getElementById('todo-cat-sel');
+  if (tcs) tcs.innerHTML = buildCatOptions(todoCats, tcs.value || 'Allgemein');
+
+  let open = todos.filter(t => !t.done);
+  let done = todos.filter(t => t.done);
+  if (todoFilter !== 'alle') {
+    open = open.filter(t => t.person === todoFilter);
+    done = done.filter(t => t.person === todoFilter);
+  }
+  // Sort: hoch first
+  const prioOrder = { hoch: 0, mittel: 1, tief: 2 };
+  open.sort((a,b) => (prioOrder[a.prio]||1) - (prioOrder[b.prio]||1));
+
+  let html = '';
+  if (open.length === 0 && done.length === 0) {
+    html = `<div class="empty"><div class="empty-icon">✓</div>Keine Aufgaben.<br>Füge eine neue hinzu!</div>`;
+  } else {
+    if (open.length > 0) html += open.map(renderTodoItem).join('');
+    if (done.length > 0) {
+      html += `<div class="section-title" style="margin-top:20px;">Erledigt (${done.length})</div>`;
+      html += done.map(renderTodoItem).join('');
+    }
+  }
+  document.getElementById('todo-list').innerHTML = html;
+}
+
+function renderTodoItem(t) {
+  const pc = t.person ? `tag tag-person-${t.person}` : '';
+  return `
+    <div class="card">
+      <div class="todo-item" onclick="openTodoSheet(${t.id})">
+        <div class="check-ring${t.done?' done':''}" onclick="event.stopPropagation();toggleTodoQuick(${t.id})"></div>
+        <div class="todo-body">
+          <div class="todo-title${t.done?' done':''}">${esc(t.title)}</div>
+          <div class="todo-meta">
+            ${t.person ? `<span class="${pc}">${t.person}</span>` : ''}
+            ${t.cat && t.cat !== 'Allgemein' ? `<span class="tag tag-cat">${t.cat}</span>` : ''}
+            ${t.prio ? `<span class="tag tag-prio-${t.prio}">${t.prio.charAt(0).toUpperCase()+t.prio.slice(1)}</span>` : ''}
+            ${t.date ? `<span class="tag tag-date">${t.date}</span>` : ''}
+          </div>
+        </div>
+        <span class="todo-arrow">›</span>
+      </div>
+    </div>`;
+}
+
+function addTodo() {
+  const inp = document.getElementById('todo-input');
+  const title = inp.value.trim(); if (!title) return;
+  const person = document.getElementById('todo-person-sel').value;
+  const cat    = document.getElementById('todo-cat-sel').value;
+  const prio   = document.getElementById('todo-prio-sel').value;
+  todos.unshift({ id: nextId++, title, notes: '', person: person === 'Alle' ? 'Pascal' : person, cat, prio, date: '', done: false });
+  inp.value = ''; renderTodos(); save();
+  toast('Aufgabe hinzugefügt');
+}
+
+function toggleTodoQuick(id) {
+  const t = todos.find(t => t.id === id); if (!t) return;
+  t.done = !t.done;
+  renderTodos(); save();
+  if (t.done) toast('✓ Erledigt!');
+}
+
+// ── DETAIL ──────────────────────────────────────────────────
+function openTodoSheet(id) {
+  const t = todos.find(t => t.id === id); if (!t) return;
+  detailTodoId = id;
+  document.getElementById('ds-title').value = t.title || '';
+  document.getElementById('ds-notes').value = t.notes || '';
+  document.getElementById('ds-prio').value  = t.prio  || 'mittel';
+  document.getElementById('ds-cat').innerHTML = buildCatOptions(todoCats, t.cat || 'Allgemein');
+  document.getElementById('ds-date').value  = t.date  || '';
+  document.getElementById('ds-person-sel').innerHTML = buildPersonSelectorHTML(t.person, 'selectTodoPerson');
+  const db = document.getElementById('ds-done-btn');
+  db.textContent = t.done ? '↩ Zurücksetzen' : '✓ Erledigt';
+  db.className = 'sh-btn ' + (t.done ? 'sh-undone' : 'sh-done');
+  document.getElementById('todo-ov').classList.add('open');
+  document.getElementById('todo-sheet').classList.add('open');
+}
+function closeTodoSheet() {
+  document.getElementById('todo-ov').classList.remove('open');
+  document.getElementById('todo-sheet').classList.remove('open');
+  detailTodoId = null;
+}
+function selectTodoPerson(name, btn) {
+  document.querySelectorAll('#ds-person-sel .ps-chip').forEach(b => b.className = 'ps-chip');
+  btn.className = 'ps-chip selected-' + name;
+  todoDetailSave();
+}
+function todoDetailSave() {
+  if (!detailTodoId) return;
+  const t = todos.find(t => t.id === detailTodoId); if (!t) return;
+  t.title = document.getElementById('ds-title').value;
+  t.notes = document.getElementById('ds-notes').value;
+  t.prio  = document.getElementById('ds-prio').value;
+  t.cat   = document.getElementById('ds-cat').value;
+  t.date  = document.getElementById('ds-date').value;
+  const sel = document.querySelector('#ds-person-sel .ps-chip[class*="selected"]');
+  if (sel) t.person = sel.textContent.trim();
+  renderTodos(); save();
+}
+function toggleTodoDone() {
+  const t = todos.find(t => t.id === detailTodoId); if (!t) return;
+  t.done = !t.done;
+  const db = document.getElementById('ds-done-btn');
+  db.textContent = t.done ? '↩ Zurücksetzen' : '✓ Erledigt';
+  db.className = 'sh-btn ' + (t.done ? 'sh-undone' : 'sh-done');
+  renderTodos(); save();
+  toast(t.done ? '✓ Erledigt!' : '↩ Zurückgesetzt');
+}
+function deleteTodo() {
+  if (!confirm('Aufgabe löschen?')) return;
+  todos = todos.filter(t => t.id !== detailTodoId);
+  closeTodoSheet(); renderTodos(); save(); toast('Gelöscht');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SHOPPING
+// ═══════════════════════════════════════════════════════════════
+function renderShop() {
+  const c = document.getElementById('shop-lists');
+  if (shopLists.length === 0) {
+    c.innerHTML = `<div class="empty"><div class="empty-icon">🛒</div>Noch keine Listen.<br>Erstelle eine neue!</div>`;
+    return;
+  }
+  c.innerHTML = shopLists.map(list => {
+    const checked = list.items.filter(i => i.checked).length;
+    const total   = list.items.length;
+    const itemsHtml = list.items.length === 0
+      ? `<div style="padding:12px 14px;font-size:13px;color:var(--text3);">Noch leer — Artikel hinzufügen</div>`
+      : list.items.map(item => `
+          <div class="shop-item">
+            <div class="shop-check${item.checked?' checked':''}" onclick="toggleShopItem(${list.id},${item.id})"></div>
+            <span class="shop-item-name${item.checked?' checked':''}">${esc(item.name)}</span>
+            ${item.qty ? `<span class="shop-item-qty">${esc(item.qty)}</span>` : ''}
+            <span class="shop-item-del" onclick="deleteShopItem(${list.id},${item.id})">✕</span>
+          </div>`).join('');
+    return `
+      <div class="card${list.collapsed?' shop-collapsed':''}" id="shop-${list.id}">
+        <div class="shop-list-header" onclick="toggleShopList(${list.id})">
+          <span style="font-size:16px;">🛒</span>
+          <span class="shop-list-name">${esc(list.name)}</span>
+          <span class="shop-list-count">${checked}/${total}</span>
+          <button onclick="event.stopPropagation();resetShopList(${list.id})" class="shop-reset-btn">↺ Reset</button>
+          <button onclick="event.stopPropagation();deleteShopList(${list.id})" style="background:none;border:none;color:var(--text3);cursor:pointer;padding:4px 6px;font-size:13px;">🗑</button>
+          <span class="shop-list-chevron">▾</span>
+        </div>
+        <div class="shop-list-body">
+          ${itemsHtml}
+          <div class="shop-add-row">
+            <input class="shop-add-input" id="shop-inp-${list.id}" placeholder="Artikel..." onkeydown="if(event.key==='Enter')addShopItem(${list.id})">
+            <input class="shop-add-input" id="shop-qty-${list.id}" placeholder="Menge" style="width:70px;flex:none;" onkeydown="if(event.key==='Enter')addShopItem(${list.id})">
+            <button class="shop-add-btn" onclick="addShopItem(${list.id})">+</button>
+          </div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function toggleShopList(id) {
+  const l = shopLists.find(l => l.id === id); if (!l) return;
+  l.collapsed = !l.collapsed; renderShop(); save();
+}
+function toggleShopItem(listId, itemId) {
+  const l = shopLists.find(l => l.id === listId); if (!l) return;
+  const i = l.items.find(i => i.id === itemId); if (!i) return;
+  i.checked = !i.checked; renderShop(); save();
+}
+function addShopItem(listId) {
+  const l = shopLists.find(l => l.id === listId); if (!l) return;
+  const inp = document.getElementById('shop-inp-' + listId);
+  const qty = document.getElementById('shop-qty-' + listId);
+  const name = inp.value.trim(); if (!name) return;
+  l.items.push({ id: nextShopItemId++, name, qty: qty.value.trim(), checked: false });
+  inp.value = ''; qty.value = '';
+  renderShop(); save();
+}
+function deleteShopItem(listId, itemId) {
+  const l = shopLists.find(l => l.id === listId); if (!l) return;
+  l.items = l.items.filter(i => i.id !== itemId);
+  renderShop(); save();
+}
+function resetShopList(listId) {
+  const l = shopLists.find(l => l.id === listId); if (!l) return;
+  l.items.forEach(i => i.checked = false);
+  renderShop(); save(); toast('Liste zurückgesetzt');
+}
+function deleteShopList(listId) {
+  if (!confirm('Liste löschen?')) return;
+  shopLists = shopLists.filter(l => l.id !== listId);
+  renderShop(); save(); toast('Liste gelöscht');
+}
+function addShopList() {
+  const inp = document.getElementById('new-list-input');
+  const name = inp.value.trim(); if (!name) return;
+  shopLists.push({ id: nextShopId++, name, collapsed: false, items: [] });
+  inp.value = ''; renderShop(); save(); toast('Liste erstellt');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// WISHES
+// ═══════════════════════════════════════════════════════════════
+function setWishFilter(f, btn) {
+  wishFilter = f;
+  document.querySelectorAll('#wish-person-strip .person-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderWishes();
+}
+
+function renderWishes() {
+  buildPersonStrip('wish-person-strip', wishFilter, 'setWishFilter');
+  const sel = document.getElementById('wish-person-sel');
+  sel.innerHTML = buildPersonSelects([], 'Pascal');
+
+  const wcs = document.getElementById('wish-cat-sel');
+  if (wcs) wcs.innerHTML = buildCatOptions(wishCats, wcs.value || 'Allgemein');
+  let open = wishes.filter(w => !w.fulfilled);
+  let done = wishes.filter(w => w.fulfilled);
+  if (wishFilter !== 'alle') {
+    open = open.filter(w => w.person === wishFilter);
+    done = done.filter(w => w.person === wishFilter);
+  }
+
+  let html = '';
+  if (open.length === 0 && done.length === 0) {
+    html = `<div class="empty"><div class="empty-icon">⭐</div>Keine Wünsche.<br>Was wünschst du dir?</div>`;
+  } else {
+    if (open.length > 0) html += `<div class="card">${open.map(renderWishItem).join('')}</div>`;
+    if (done.length > 0) {
+      html += `<div class="section-title" style="margin-top:20px;">Erfüllt (${done.length})</div>`;
+      html += `<div class="card">${done.map(renderWishItem).join('')}</div>`;
+    }
+  }
+  document.getElementById('wish-list').innerHTML = html;
+}
+
+function renderWishItem(w) {
+  const star = w.fulfilled ? '⭐' : '☆';
+  return `
+    <div class="wish-item" onclick="openWishSheet(${w.id})">
+      <span class="wish-star" onclick="event.stopPropagation();toggleWishQuick(${w.id})">${star}</span>
+      <div class="wish-body">
+        <div class="wish-title${w.fulfilled?' fulfilled':''}">${esc(w.title)}</div>
+        <div class="todo-meta" style="margin-top:5px;">
+          ${w.person ? `<span class="tag tag-person-${w.person}">${w.person}</span>` : ''}
+          ${w.cat && w.cat !== 'Allgemein' ? `<span class="tag tag-cat">${w.cat}</span>` : ''}
+          ${w.prio ? `<span class="tag tag-prio-${w.prio}">${w.prio.charAt(0).toUpperCase()+w.prio.slice(1)}</span>` : ''}
+        </div>
+        ${w.link ? `<div class="wish-link">🔗 ${esc(w.link)}</div>` : ''}
+      </div>
+      <span class="todo-arrow">›</span>
+    </div>`;
+}
+
+function addWish() {
+  const inp = document.getElementById('wish-input');
+  const title = inp.value.trim(); if (!title) return;
+  const person = document.getElementById('wish-person-sel').value;
+  const cat    = document.getElementById('wish-cat-sel').value;
+  wishes.unshift({ id: nextId++, title, notes: '', person: person === 'Alle' ? 'Pascal' : person, cat, prio: 'mittel', link: '', fulfilled: false });
+  inp.value = ''; renderWishes(); save(); toast('Wunsch hinzugefügt ⭐');
+}
+
+function toggleWishQuick(id) {
+  const w = wishes.find(w => w.id === id); if (!w) return;
+  w.fulfilled = !w.fulfilled;
+  renderWishes(); save();
+  if (w.fulfilled) toast('⭐ Wunsch erfüllt!');
+}
+
+function openWishSheet(id) {
+  const w = wishes.find(w => w.id === id); if (!w) return;
+  detailWishId = id;
+  document.getElementById('ws-title').value = w.title || '';
+  document.getElementById('ws-notes').value = w.notes || '';
+  document.getElementById('ws-link').value  = w.link  || '';
+  document.getElementById('ws-cat').innerHTML = buildCatOptions(wishCats, w.cat || 'Allgemein');
+  document.getElementById('ws-prio').value  = w.prio  || 'mittel';
+  document.getElementById('ws-person-sel').innerHTML = buildPersonSelectorHTML(w.person, 'selectWishPerson');
+  const db = document.getElementById('ws-done-btn');
+  db.textContent = w.fulfilled ? '↩ Zurücksetzen' : '⭐ Erfüllt';
+  db.className = 'sh-btn ' + (w.fulfilled ? 'sh-undone' : 'sh-done');
+  document.getElementById('wish-ov').classList.add('open');
+  document.getElementById('wish-sheet').classList.add('open');
+}
+function closeWishSheet() {
+  document.getElementById('wish-ov').classList.remove('open');
+  document.getElementById('wish-sheet').classList.remove('open');
+  detailWishId = null;
+}
+function selectWishPerson(name, btn) {
+  document.querySelectorAll('#ws-person-sel .ps-chip').forEach(b => b.className = 'ps-chip');
+  btn.className = 'ps-chip selected-' + name;
+  wishDetailSave();
+}
+function wishDetailSave() {
+  if (!detailWishId) return;
+  const w = wishes.find(w => w.id === detailWishId); if (!w) return;
+  w.title = document.getElementById('ws-title').value;
+  w.notes = document.getElementById('ws-notes').value;
+  w.link  = document.getElementById('ws-link').value;
+  w.cat   = document.getElementById('ws-cat').value;
+  w.prio  = document.getElementById('ws-prio').value;
+  const sel = document.querySelector('#ws-person-sel .ps-chip[class*="selected"]');
+  if (sel) w.person = sel.textContent.trim();
+  renderWishes(); save();
+}
+function toggleWishFulfilled() {
+  const w = wishes.find(w => w.id === detailWishId); if (!w) return;
+  w.fulfilled = !w.fulfilled;
+  const db = document.getElementById('ws-done-btn');
+  db.textContent = w.fulfilled ? '↩ Zurücksetzen' : '⭐ Erfüllt';
+  db.className = 'sh-btn ' + (w.fulfilled ? 'sh-undone' : 'sh-done');
+  renderWishes(); save();
+  toast(w.fulfilled ? '⭐ Wunsch erfüllt!' : '↩ Zurückgesetzt');
+}
+function deleteWish() {
+  if (!confirm('Wunsch löschen?')) return;
+  wishes = wishes.filter(w => w.id !== detailWishId);
+  closeWishSheet(); renderWishes(); save(); toast('Gelöscht');
+}
+
+// ═══════════════════════════════════════════════════════════════
+// UTILS
+// ═══════════════════════════════════════════════════════════════
+function esc(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// CATEGORIES
+// ═══════════════════════════════════════════════════════════════
+let todoCats  = ['Allgemein','Haushalt','Auto','Arbeit','Familie','Gesundheit','Finanzen'];
+let wishCats  = ['Allgemein','Erlebnis','Geschenk','Reise','Tech','Mode'];
+const CAT_EMOJIS = { Allgemein:'', Haushalt:'🏠', Auto:'🚗', Arbeit:'💼', Familie:'👨‍👩‍👧‍👧', Gesundheit:'💊', Finanzen:'💰', Erlebnis:'🎉', Geschenk:'🎁', Reise:'✈️', Tech:'📱', Mode:'👗' };
+
+function catLabel(cat) {
+  const e = CAT_EMOJIS[cat] || '';
+  return e ? e + ' ' + cat : cat;
+}
+
+function buildCatOptions(cats, selectedVal) {
+  return cats.map(c => `<option value="${c}"${c===selectedVal?' selected':''}>${catLabel(c)}</option>`).join('');
+}
+
+function openCatManager() {
+  renderCatLists();
+  document.getElementById('cat-ov').classList.add('open');
+  document.getElementById('cat-sheet').classList.add('open');
+}
+function closeCatManager() {
+  document.getElementById('cat-ov').classList.remove('open');
+  document.getElementById('cat-sheet').classList.remove('open');
+  // Rebuild selects with updated cats
+  rebuildCatSelects();
+}
+
+function renderCatLists() {
+  const fixed = ['Allgemein'];
+  document.getElementById('todo-cats-list').innerHTML = todoCats.map(c => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="flex:1;font-size:14px;">${catLabel(c)}</span>
+      ${!fixed.includes(c) ? `<button onclick="deleteTodoCat('${c}')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--text3);cursor:pointer;">✕</button>` : '<span style="font-size:11px;color:var(--text3);">Standard</span>'}
+    </div>`).join('');
+
+  document.getElementById('wish-cats-list').innerHTML = wishCats.map(c => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid var(--border);">
+      <span style="flex:1;font-size:14px;">${catLabel(c)}</span>
+      ${!fixed.includes(c) ? `<button onclick="deleteWishCat('${c}')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:3px 9px;font-size:11px;color:var(--text3);cursor:pointer;">✕</button>` : '<span style="font-size:11px;color:var(--text3);">Standard</span>'}
+    </div>`).join('');
+}
+
+function addTodoCat() {
+  const inp = document.getElementById('new-todo-cat-inp');
+  const name = inp.value.trim(); if (!name) return;
+  if (!todoCats.includes(name)) { todoCats.push(name); save(); }
+  inp.value = ''; renderCatLists(); toast('Kategorie hinzugefügt');
+}
+function deleteTodoCat(cat) {
+  todoCats = todoCats.filter(c => c !== cat);
+  save(); renderCatLists();
+}
+function addWishCat() {
+  const inp = document.getElementById('new-wish-cat-inp');
+  const name = inp.value.trim(); if (!name) return;
+  if (!wishCats.includes(name)) { wishCats.push(name); save(); }
+  inp.value = ''; renderCatLists(); toast('Kategorie hinzugefügt');
+}
+function deleteWishCat(cat) {
+  wishCats = wishCats.filter(c => c !== cat);
+  save(); renderCatLists();
+}
+
+function rebuildCatSelects() {
+  // Todo add bar
+  const tcs = document.getElementById('todo-cat-sel');
+  if (tcs) tcs.innerHTML = buildCatOptions(todoCats, tcs.value);
+  // Wish add bar
+  const wcs = document.getElementById('wish-cat-sel');
+  if (wcs) wcs.innerHTML = buildCatOptions(wishCats, wcs.value);
+  // Detail sheets
+  const dsc = document.getElementById('ds-cat');
+  if (dsc) dsc.innerHTML = buildCatOptions(todoCats, dsc.value);
+  const wsc = document.getElementById('ws-cat');
+  if (wsc) wsc.innerHTML = buildCatOptions(wishCats, wsc.value);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════
+load();
+renderTodos();
+</script>
+</body>
+</html>
