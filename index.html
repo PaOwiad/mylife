@@ -430,7 +430,10 @@ body {
 
 <!-- TODO PAGE -->
 <div class="page active" id="page-todo">
-  <div class="person-strip" id="todo-person-strip"></div>
+  <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+    <div class="person-strip" id="todo-person-strip" style="margin-bottom:0;flex:1;"></div>
+    <button onclick="toggleTodoSort()" id="sort-btn" style="flex-shrink:0;padding:6px 12px;border-radius:99px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;font-weight:500;cursor:pointer;font-family:inherit;white-space:nowrap;">📅 Datum</button>
+  </div>
   <div class="add-bar">
     <input class="add-input" id="todo-input" placeholder="Neue Aufgabe..." onkeydown="if(event.key==='Enter')addTodo()">
     <button class="add-btn" onclick="addTodo()">+</button>
@@ -565,6 +568,29 @@ body {
   </div>
 </div>
 
+<!-- BACKUP SHEET -->
+<div class="overlay" id="backup-ov" onclick="closeBackupSheet()"></div>
+<div class="sheet" id="backup-sheet">
+  <div class="sheet-handle"></div>
+  <div class="sheet-hd">
+    <span class="sheet-hd-title">⇅ Backup</span>
+    <button class="close-btn" onclick="closeBackupSheet()">✕</button>
+  </div>
+  <div style="padding:20px;">
+    <div style="font-size:13px;color:var(--text2);line-height:1.6;margin-bottom:20px;">
+      Vor jedem Update: exportieren. Nach dem Update: importieren.
+    </div>
+    <button onclick="exportData()" style="width:100%;padding:13px;background:var(--accent);color:white;border:none;border-radius:var(--radius);font-size:15px;font-weight:600;cursor:pointer;font-family:inherit;margin-bottom:10px;">
+      ⬇ Daten exportieren
+    </button>
+    <label style="display:block;width:100%;padding:13px;background:var(--surface2);border:1.5px dashed var(--border2);border-radius:var(--radius);font-size:15px;font-weight:600;color:var(--text2);cursor:pointer;text-align:center;">
+      ⬆ Daten importieren
+      <input type="file" accept=".json" style="display:none;" onchange="importData(event)">
+    </label>
+    <div id="backup-status" style="font-size:12px;color:var(--text2);margin-top:12px;min-height:18px;text-align:center;"></div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -589,6 +615,7 @@ let nextId = 100;
 let nextShopId = 10;
 let nextShopItemId = 100;
 let todoFilter  = 'alle';
+let todoSort = 'default'; // 'default' | 'date'
 let wishFilter  = 'alle';
 let detailTodoId = null;
 let detailWishId = null;
@@ -675,6 +702,15 @@ function buildPersonSelectorHTML(selected, onChange) {
 // ═══════════════════════════════════════════════════════════════
 // TO-DO
 // ═══════════════════════════════════════════════════════════════
+function toggleTodoSort() {
+  todoSort = todoSort === 'date' ? 'default' : 'date';
+  const btn = document.getElementById('sort-btn');
+  if (btn) btn.style.background = todoSort === 'date' ? 'var(--accent)' : 'var(--surface)';
+  if (btn) btn.style.color = todoSort === 'date' ? 'white' : 'var(--text2)';
+  if (btn) btn.style.borderColor = todoSort === 'date' ? 'var(--accent)' : 'var(--border)';
+  renderTodos();
+}
+
 function setTodoFilter(f, btn) {
   todoFilter = f;
   document.querySelectorAll('#todo-person-strip .person-chip').forEach(b => b.classList.remove('active'));
@@ -695,9 +731,15 @@ function renderTodos() {
     open = open.filter(t => t.person === todoFilter);
     done = done.filter(t => t.person === todoFilter);
   }
-  // Sort: hoch first
-  const prioOrder = { hoch: 0, mittel: 1, tief: 2 };
-  open.sort((a,b) => (prioOrder[a.prio]||1) - (prioOrder[b.prio]||1));
+  // Sort
+  if (todoSort === 'date') {
+    open.sort((a,b) => {
+      if (!a.date && !b.date) return 0;
+      if (!a.date) return 1;
+      if (!b.date) return -1;
+      return a.date.localeCompare(b.date);
+    });
+  }
 
   let html = '';
   if (open.length === 0 && done.length === 0) {
@@ -1095,6 +1137,57 @@ function rebuildCatSelects() {
   if (dsc) dsc.innerHTML = buildCatOptions(todoCats, dsc.value);
   const wsc = document.getElementById('ws-cat');
   if (wsc) wsc.innerHTML = buildCatOptions(wishCats, wsc.value);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// BACKUP
+// ═══════════════════════════════════════════════════════════════
+function openBackupSheet() {
+  document.getElementById('backup-status').textContent = '';
+  document.getElementById('backup-ov').classList.add('open');
+  document.getElementById('backup-sheet').classList.add('open');
+}
+function closeBackupSheet() {
+  document.getElementById('backup-ov').classList.remove('open');
+  document.getElementById('backup-sheet').classList.remove('open');
+}
+
+function exportData() {
+  const data = { todos, wishes, shopLists, nextId, nextShopId, nextShopItemId, todoCats, wishCats, exported: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'MyLife-Backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('✓ Backup exportiert');
+}
+
+function importData(event) {
+  const file = event.target.files[0]; if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const d = JSON.parse(e.target.result);
+      if (d.todos)     todos     = d.todos;
+      if (d.wishes)    wishes    = d.wishes;
+      if (d.shopLists) shopLists = d.shopLists;
+      if (d.nextId)        nextId        = d.nextId;
+      if (d.nextShopId)    nextShopId    = d.nextShopId;
+      if (d.nextShopItemId) nextShopItemId = d.nextShopItemId;
+      if (d.todoCats) todoCats = d.todoCats;
+      if (d.wishCats) wishCats = d.wishCats;
+      save();
+      renderTodos();
+      document.getElementById('backup-status').textContent = '✓ ' + (todos.length + wishes.length) + ' Einträge importiert!';
+      toast('✓ Daten importiert');
+      setTimeout(closeBackupSheet, 1500);
+    } catch(err) {
+      document.getElementById('backup-status').textContent = '✗ Fehler beim Import';
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
 }
 
 // ═══════════════════════════════════════════════════════════════
