@@ -438,11 +438,7 @@ body {
   <div class="add-opts">
     <select id="todo-person-sel"></select>
     <select id="todo-cat-sel"></select>
-    <select id="todo-prio-sel">
-      <option value="mittel">🟡 Mittel</option>
-      <option value="hoch">🔴 Hoch</option>
-      <option value="tief">🟢 Tief</option>
-    </select>
+    <input type="date" id="todo-date-inp" style="flex:1;padding:8px 10px;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text2);font-size:12px;font-family:inherit;outline:none;">
   </div>
   <div id="todo-list"></div>
 </div>
@@ -496,27 +492,8 @@ body {
   </div>
   <div class="field"><div class="flabel">Titel</div><textarea id="ds-title" rows="2" oninput="todoDetailSave()"></textarea></div>
   <div class="field"><div class="flabel">Notizen</div><textarea id="ds-notes" rows="3" oninput="todoDetailSave()"></textarea></div>
-  <div class="field-row">
-    <div class="field"><div class="flabel">Prio</div>
-      <select id="ds-prio" onchange="todoDetailSave()">
-        <option value="hoch">🔴 Hoch</option>
-        <option value="mittel">🟡 Mittel</option>
-        <option value="tief">🟢 Tief</option>
-      </select>
-    </div>
-    <div class="field"><div class="flabel">Kategorie</div>
-      <select id="ds-cat" onchange="todoDetailSave()">
-        <option value="Allgemein">Allgemein</option>
-        <option value="Haushalt">🏠 Haushalt</option>
-        <option value="Auto">🚗 Auto</option>
-        <option value="Arbeit">💼 Arbeit</option>
-        <option value="Familie">👨‍👩‍👧‍👧 Familie</option>
-        <option value="Gesundheit">💊 Gesundheit</option>
-        <option value="Finanzen">💰 Finanzen</option>
-      </select>
-    </div>
-  </div>
-  <div class="field"><div class="flabel">Fällig</div><input type="date" id="ds-date" oninput="todoDetailSave()"></div>
+  <div class="field"><div class="flabel">Datum</div><input type="date" id="ds-date" oninput="todoDetailSave()"></div>
+  <div class="field"><div class="flabel">Kategorie</div><select id="ds-cat" onchange="todoDetailSave()"></select></div>
   <div class="field"><div class="flabel">Für wen</div></div>
   <div class="person-selector" id="ds-person-sel"></div>
   <div class="sh-actions">
@@ -744,10 +721,9 @@ function renderTodoItem(t) {
         <div class="todo-body">
           <div class="todo-title${t.done?' done':''}">${esc(t.title)}</div>
           <div class="todo-meta">
+            ${t.date ? `<span class="tag tag-date">📅 ${t.date}</span>` : ''}
             ${t.person ? `<span class="${pc}">${t.person}</span>` : ''}
             ${t.cat && t.cat !== 'Allgemein' ? `<span class="tag tag-cat">${t.cat}</span>` : ''}
-            ${t.prio ? `<span class="tag tag-prio-${t.prio}">${t.prio.charAt(0).toUpperCase()+t.prio.slice(1)}</span>` : ''}
-            ${t.date ? `<span class="tag tag-date">${t.date}</span>` : ''}
           </div>
         </div>
         <span class="todo-arrow">›</span>
@@ -760,8 +736,9 @@ function addTodo() {
   const title = inp.value.trim(); if (!title) return;
   const person = document.getElementById('todo-person-sel').value;
   const cat    = document.getElementById('todo-cat-sel').value;
-  const prio   = document.getElementById('todo-prio-sel').value;
-  todos.unshift({ id: nextId++, title, notes: '', person: person === 'Alle' ? 'Pascal' : person, cat, prio, date: '', done: false });
+  const date   = document.getElementById('todo-date-inp').value;
+  todos.unshift({ id: nextId++, title, notes: '', person: person === 'Alle' ? 'Pascal' : person, cat, prio: 'mittel', date, done: false });
+  document.getElementById('todo-date-inp').value = '';
   inp.value = ''; renderTodos(); save();
   toast('Aufgabe hinzugefügt');
 }
@@ -779,7 +756,6 @@ function openTodoSheet(id) {
   detailTodoId = id;
   document.getElementById('ds-title').value = t.title || '';
   document.getElementById('ds-notes').value = t.notes || '';
-  document.getElementById('ds-prio').value  = t.prio  || 'mittel';
   document.getElementById('ds-cat').innerHTML = buildCatOptions(todoCats, t.cat || 'Allgemein');
   document.getElementById('ds-date').value  = t.date  || '';
   document.getElementById('ds-person-sel').innerHTML = buildPersonSelectorHTML(t.person, 'selectTodoPerson');
@@ -804,7 +780,6 @@ function todoDetailSave() {
   const t = todos.find(t => t.id === detailTodoId); if (!t) return;
   t.title = document.getElementById('ds-title').value;
   t.notes = document.getElementById('ds-notes').value;
-  t.prio  = document.getElementById('ds-prio').value;
   t.cat   = document.getElementById('ds-cat').value;
   t.date  = document.getElementById('ds-date').value;
   const sel = document.querySelector('#ds-person-sel .ps-chip[class*="selected"]');
@@ -956,7 +931,7 @@ function renderWishItem(w) {
         <div class="todo-meta" style="margin-top:5px;">
           ${w.person ? `<span class="tag tag-person-${w.person}">${w.person}</span>` : ''}
           ${w.cat && w.cat !== 'Allgemein' ? `<span class="tag tag-cat">${w.cat}</span>` : ''}
-          ${w.prio ? `<span class="tag tag-prio-${w.prio}">${w.prio.charAt(0).toUpperCase()+w.prio.slice(1)}</span>` : ''}
+
         </div>
         ${w.link ? `<div class="wish-link">🔗 ${esc(w.link)}</div>` : ''}
       </div>
